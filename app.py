@@ -78,8 +78,8 @@ def batch_classification():
     try:
         log.info("batch_classification initialization successfull")
         mongoClient = MongoDBManagement(username='assignment', password='assignment')
-        if mongoClient.isDatabasePresent(db_name='batch_data') == True:
-            if mongoClient.isCollectionPresent(collection_name='classification_batch') == True:
+        if mongoClient.isDatabasePresent(db_name='batch_data'):
+            if mongoClient.isCollectionPresent(collection_name='classification_batch'):
                 response = mongoClient.getRecords(collection_name='classification_batch')
                 print(response)
                 if response is not None:
