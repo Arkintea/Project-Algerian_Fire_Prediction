@@ -1,0 +1,13 @@
+Flask
+Flask-Cors
+gunicorn
+Jinja2
+numpy
+pandas
+python-dateutil
+scikit-learn
+scipy
+six
+sklearn
+dnspython
+pymongo
