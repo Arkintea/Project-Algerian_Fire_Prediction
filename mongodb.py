@@ -4,16 +4,13 @@ from app_log import log
 
 class MongoDBManagement:
 
-    def __init__(self, username, password):
+    def __init__(self, password):
         """
         This function sets the required url
         """
         try:
-            self.username = username
-            self.password = password
-            self.url = f"mongodb+srv://{self.username}:{self.password}@testcluster.fjvlj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+            self.url = f"mongodb+srv://assignment:{password}@cluster0.glme8.mongodb.net/?retryWrites=true&w=majority"
             self.client = pymongo.MongoClient(self.url)
-
         except Exception as e:
             raise Exception(f"(__init__): Something went wrong on initiation process\n" + str(e))
 
@@ -22,7 +19,7 @@ class MongoDBManagement:
         '''Methods checks if Database already present or not'''
         try:
             if db_name in self.client.list_database_names():
-                self.database = db_name
+                database = db_name
                 return True
             else:
                 return False
@@ -33,7 +30,7 @@ class MongoDBManagement:
     def createDatabase(self, db_name):
         """This function create database if named database is not present"""
         try:
-            self.database = self.client[str(db_name)]
+            database = self.client[str(db_name)]
             log.error('Database successfully created')
         except Exception as e:
             log.error('Database creation error occured', e)
@@ -43,28 +40,24 @@ class MongoDBManagement:
             print('Database name already exist')
 
 
-    def isCollectionPresent(self, collection_name):
+    def isCollectionPresent(self, db_name, collection_name):
         """This checks if collection is present or not."""
         try:
-            if self.database in self.client.list_database_names():
-                if collection_name in self.database.list_collection_names():
-                    log.info(f"Collection {collection_name} present")
-                    return True
-                else:
-                    return False
+            if collection_name in self.client[str(db_name)].list_collection_names():
+                log.info(f"Collection {collection_name} present")
+                return True
             else:
                 return False
         except Exception as e:
             log.info(f"[isCollectionPresent]: Failed to check collection\n" + str(e))
 
     
-    def createCollection(self, collection_name):
+    def createCollection(self, db_name, collection_name):
         """Collection or table is created"""
         log.error('Create collection')
-        
-        #create collection/table
         try:
-            self.collection = self.database[str(collection_name)]
+            #create collection/table
+            collection = self.client[str(db_name)][str(collection_name)]
             log.error('Collection created successfully')
         except Exception as e:
             log.error('Collection creation error occured', e)
@@ -74,11 +67,11 @@ class MongoDBManagement:
             print('Collection name already exists')
 
 
-    def getRecords(self, collection_name):
+    def getRecords(self, db_name, collection_name):
         """This fetches collection data from database."""
         try:
-            self.collection = self.database[collection_name]
-            data = self.collection.find()
+            collection = self.client[str(db_name)][str(collection_name)]
+            data = collection.find()
             log.info(f"Fetching records from collection")
             return data
         except Exception as e:
@@ -86,16 +79,16 @@ class MongoDBManagement:
             print("[getRecords]:Problem occured while fetching data")
     
 
-    def insert(self, record):
+    def insert(self, db_name, collection_name, record):
         """clean the dataset and insert data into mongodb database"""
         log.info('execute the mongodb insertion function')
         try:
             #insert data into collection
             if type(record) == dict:
-                self.collection.insert_one(record)
+                self.client[str(db_name)][str(collection_name)].insert_one(record)
                 log.error('Record inserted successfully')
             elif type(record) == list:
-                self.collection.insert_many(record)
+                self.client[str(db_name)][str(collection_name)].insert_many(record)
                 log.error('Record inserted successfully')
         except Exception as e:
             log.error('Insertion operation error occured', e)
@@ -104,11 +97,11 @@ class MongoDBManagement:
             print('Insertion operation successfully completed')
     
             
-    def update(self, old_value, new_value):
+    def update(self, db_name, collection_name, old_value, new_value):
         """Update data set with new values"""
-        #update many operation
         try:
-            self.collection.update_many(old_value, {'$set': new_value})
+            #update many operation
+            self.client[str(db_name)][str(collection_name)].update_many(old_value, {'$set': new_value})
         except Exception as e:
             log.error('Update error', e)
             print('Update error')
@@ -116,11 +109,11 @@ class MongoDBManagement:
             print('Update successfully completed')
     
 
-    def delete(self, delete_data):
+    def delete(self, db_name, collection_name, delete_data):
         """Delete operation on the dataset"""
-        #delete many element of a collection based on some conditions
         try:
-            self.collection.delete_many(delete_data)
+            #delete many element of a collection based on some conditions
+            self.client[str(db_name)][str(collection_name)].delete_many(delete_data)
         except Exception as e:
             log.error('Delete operation error occured', e)
             print('Delete operation error occured')
@@ -128,7 +121,7 @@ class MongoDBManagement:
             print('Delete operation successfully completed')
     
 
-    def find(self, query):
+    def find(self, db_name, collection_name, query):
         """find a particular set of data"""
-        return self.collection.find(query)
+        return self.client[str(db_name)][str(collection_name)].find(query)
 

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from app_log import log
 from mongodb import MongoDBManagement
+from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -77,20 +78,31 @@ def predict_classification():
 def batch_classification():
     try:
         log.info("batch_classification initialization successfull")
-        mongoClient = MongoDBManagement(username='assignment', password='assignment')
+        mongoClient = MongoDBManagement(password='assignment')
         if mongoClient.isDatabasePresent(db_name='batch_data'):
-            if mongoClient.isCollectionPresent(collection_name='classification_batch'):
-                response = mongoClient.getRecords(collection_name='classification_batch')
+            if mongoClient.isCollectionPresent(db_name='batch_data', collection_name='classification_batch'):
+                response = mongoClient.getRecords(db_name='batch_data', collection_name='classification_batch')
                 print(response)
                 if response is not None:
-                    batch = [i for i in response]
-                    log.info("db batch_classification initialization successfull")
+                    batch = []
+                    for i in response:
+                        batch.append(i)
+                        print(i)
                     batch_reg = pd.DataFrame(batch)
                     test_data = batch_reg.drop(columns='_id')
                     test_data.to_html("class_batch.html")
-                    data = model.predict(test_data.values)
+                    
+                    scaler = StandardScaler()
+                    scaled_test_data = scaler.fit_transform(test_data)
+                    scaled_test_data=pd.DataFrame(scaled_test_data)
+
+                    data = model.predict(scaled_test_data.values)
+                    result = pd.DataFrame(data)
+                    result.to_csv("class_batch.csv")
+                    result.to_html("class_batch_html.html")
+                    
                     log.info("Batch Pridiction successfull",)
-                    return render_template('batch_classification.html', data=data)
+                    return render_template('batch_classification.html', data=result)
         return render_template('single_classification.html')
     except Exception as e:
         log.exception(" Something went wrong on batch_classification process")
