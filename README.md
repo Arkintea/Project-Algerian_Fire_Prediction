@@ -2,7 +2,7 @@
 
 ## Start Marchine Learning Project
 
-https://implem.herokuapp.com/
+https://algerianfireprediction.herokuapp.com/
 
 ### Software and Account Requirements
 
